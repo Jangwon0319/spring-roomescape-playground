@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.Reservation;
+import roomescape.exception.NotFoundException;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,6 +33,17 @@ public class ReservationController {
     // 예약 추가 API 구현
     @PostMapping("/reservations")
     public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
+
+        if (reservation.getName() == null || reservation.getName().isEmpty()) {
+            throw new IllegalArgumentException("Reservation id cannot be null");
+        }
+        if (reservation.getDate() == null || reservation.getDate().isEmpty()) {
+            throw new IllegalArgumentException("Reservation Date cannot be null");
+        }
+        if (reservation.getTime() == null || reservation.getTime().isEmpty()) {
+            throw new IllegalArgumentException("Reservation Time cannot be null");
+        }
+
         Reservation newReservation = Reservation.toEntity(reservation, index.getAndIncrement());
         reservations.add(newReservation);
         return ResponseEntity.created(URI.create("/reservations/" + newReservation.getId())).body(newReservation);
@@ -43,10 +55,15 @@ public class ReservationController {
         Reservation reservation = reservations.stream()
                 .filter(it -> Objects.equals(it.getId(), id))
                 .findFirst()
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new NotFoundException("Reservation not found"));
 
         reservations.remove(reservation);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<Void> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.badRequest().build();
     }
 }
