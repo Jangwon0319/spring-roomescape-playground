@@ -28,13 +28,13 @@ public class ReservationController {
     public ResponseEntity<List<Reservation>> reservations() {
         return ResponseEntity.ok().body(reservations);
     }
-    
+
     // 예약 추가 API 구현
     @PostMapping("/reservations")
-    public ResponseEntity<Void> createReservation(@RequestBody Reservation reservation) {
+    public ResponseEntity<Reservation> createReservation(@RequestBody Reservation reservation) {
         Reservation newReservation = Reservation.toEntity(reservation, index.getAndIncrement());
         reservations.add(newReservation);
-        return ResponseEntity.created(URI.create("/reservations/" + newReservation.getId())).build();
+        return ResponseEntity.created(URI.create("/reservations/" + newReservation.getId())).body(newReservation);
     }
 
     // 예약 취소 API 구현
@@ -49,8 +49,4 @@ public class ReservationController {
 
         return ResponseEntity.noContent().build();
     }
-
-
-
-
 }
