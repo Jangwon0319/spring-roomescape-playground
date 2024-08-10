@@ -1,6 +1,8 @@
 package roomescape.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import roomescape.domain.Reservation;
@@ -17,6 +19,12 @@ public class ReservationController {
 
     private AtomicLong index = new AtomicLong(1);
     private List<Reservation> reservations = new ArrayList<>();
+    private final JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    public ReservationController(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     // 예약 관리 페이지 응답
     @GetMapping("/reservation")
@@ -27,6 +35,15 @@ public class ReservationController {
     // 예약 목록 조회 API
     @GetMapping("/reservations")
     public ResponseEntity<List<Reservation>> reservations() {
+        String sql = "SELECT id, name, date, time FROM reservation";
+        List<Reservation> reservations = jdbcTemplate.query(sql, (rs, rowNum) ->
+                new Reservation(
+                        rs.getLong("id"),
+                        rs.getString("name"),
+                        rs.getString("date"),
+                        rs.getString("time")
+                )
+        );
         return ResponseEntity.ok().body(reservations);
     }
 
@@ -66,4 +83,6 @@ public class ReservationController {
     public ResponseEntity<Void> handleIllegalArgumentException(IllegalArgumentException ex) {
         return ResponseEntity.badRequest().build();
     }
+
+
 }

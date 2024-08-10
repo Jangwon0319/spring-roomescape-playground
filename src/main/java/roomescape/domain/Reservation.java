@@ -24,7 +24,6 @@ public class Reservation {
         this.time = time;
     }
 
-    // Getter
     public Long getId() {
         return id;
     }
@@ -41,7 +40,6 @@ public class Reservation {
         return time;
     }
 
-    // Setter
     public void setId(Long id) {
         this.id = id;
     }
